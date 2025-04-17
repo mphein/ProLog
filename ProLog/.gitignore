@@ -1,0 +1,27 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Django
+*.log
+*.sqlite3
+db.sqlite3
+media/
+static/
+
+# Virtual environment
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# pytest
+*.coverage
+.coverage.*
+nosetests.xml
+test-*.xml
+tox.ini
