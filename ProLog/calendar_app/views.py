@@ -5,9 +5,8 @@ from .serializers import EventSerializer
 
 # Create your views here.
 class UserEventListAPIView(ListAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = EventSerializer
-
+    #permission_classes = [IsAuthenticated]
     def get_queryset(self):
         """
         Return the list of events for the currently authenticated user.
@@ -15,9 +14,8 @@ class UserEventListAPIView(ListAPIView):
         return Event.objects.filter(user=self.request.user)
 
 class UserEventCreateAPIView(CreateAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = EventSerializer
-
+    #permission_classes = [IsAuthenticated]
     def perform_create(self, serializer):
         # Automatically set the user when creating an event
         serializer.save(user=self.request.user)
