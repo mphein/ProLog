@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'calendar_app',
     'project_management',
     'rest_framework',
-    'dj_rest_auth'
 ]
 
 MIDDLEWARE = [

@@ -19,8 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('dj_rest_auth.urls')),  # For login, logout, password reset, etc.
-    path('api/auth/register/', include('djoser.urls')),  # For registration, password reset, etc.
-    path('api/auth/users/', include('djoser.urls.authtoken')),  # For token authentication
-    path('calendar/', include('calendar_app.urls')),
+    path('api/', include('calendar_app.urls')),
 ]
