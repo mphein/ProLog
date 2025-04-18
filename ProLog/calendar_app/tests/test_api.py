@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 from calendar_app.models import Event
 from rest_framework import status
 
+
+######################################################################
+#                 Tests for User event API retrieval                 #
+######################################################################
+
 @pytest.fixture
 def user():
     """Create a user to use in tests."""
@@ -46,7 +51,8 @@ def test_event_list_view_forbidden(api_client):
     assert response.status_code == 403
 
 ######################################################################
-
+#                  Tests for API Event Creation                      #
+######################################################################
 @pytest.mark.django_db
 def test_create_event(api_client, user):
     """Test that a user can create a new event."""
@@ -97,3 +103,68 @@ def test_user_cannot_create_empty_event(api_client, user):
     api_client.login(username='testuser', password='testpassword')
     response = api_client.post('/calendar/api/events/create', {})
     assert response.status_code == 400
+
+
+######################################################################
+#                  Tests for API Updating Event                      #
+######################################################################
+
+
+@pytest.mark.django_db
+def test_update_event(api_client, user, event):
+    api_client.login(username='testuser', password='testpassword')
+    event_id = event.id
+
+    updated_data = {
+        'title': 'Updated Event',
+        'description': 'Testing Update API',
+        'start_time': '2025-04-20T10:00:00Z',
+        'end_time': '2025-04-20T12:00:00Z',
+        'location': 'UPDATELAND',
+        'user': user.id  
+    }
+
+    url = f'/calendar/api/events/{event_id}/update/'
+    response = api_client.put(url, updated_data, format='json')
+
+    assert response.status_code == status.HTTP_200_OK
+    event.refresh_from_db()
+    assert event.title == updated_data['title']
+    assert event.description == updated_data['description']
+    assert event.location == updated_data['location']
+
+@pytest.mark.django_db
+def test_update_event_wrong_user(api_client, user, event):
+    other_user = User.objects.create_user(username='otheruser', password='otherpassword')
+
+    api_client.login(username='otherusername', password='otherpassword')
+    event_id = event.id
+
+    updated_data = {
+        'title': 'Updated Event',
+        'description': 'Testing Update API',
+        'start_time': '2025-04-20T10:00:00Z',
+        'end_time': '2025-04-20T12:00:00Z',
+        'location': 'UPDATELAND',
+        'user': user.id  
+    }
+
+    url = f'/calendar/api/events/{event_id}/update/'
+    response = api_client.put(url, updated_data, format='json')
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    event.refresh_from_db()
+    assert event.title != updated_data['title']
+    assert event.description != updated_data['description']
+    assert event.location != updated_data['location']
+
+@pytest.mark.django_db
+def test_update_non_existent_event(api_client, user, event):
+    api_client.login(username='testuser', password='testpassword')
+    event_id = 9999
+
+    url = f'/calendar/api/events/{event_id}/update/'
+    response = api_client.put(url, {}, format='json')
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
