@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from './api';
 import Login from './Login';
+import CalendarPage from './CalendarPage';
 
 function App() {
-  const [events, setEvents] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('access_token'));
 
   const handleLogout = () => {
@@ -12,23 +12,20 @@ function App() {
     setIsLoggedIn(false);
   };
 
+  // Auto-check token on load
   useEffect(() => {
-    if (!isLoggedIn) return;
-
-    api.get('events/')
-      .then((res) => setEvents(res.data))
-      .catch((err) => {
-        console.error('Auth error:', err);
-        handleLogout(); // If the request fails due to invalid token
-      });
-  }, [isLoggedIn]);
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsLoggedIn(false);
+    }
+  }, []);
 
   if (!isLoggedIn) return <Login onLogin={() => setIsLoggedIn(true)} />;
 
   return (
-    <div className="p-6">
+    <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Events</h1>
+        <h1 className="text-xl font-bold">Calendar</h1>
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-3 py-1 rounded"
@@ -37,16 +34,13 @@ function App() {
         </button>
       </div>
 
-      <ul className="space-y-2">
-        {events.map((event) => (
-          <li key={event.id} className="p-2 border rounded">{event.title}</li>
-        ))}
-      </ul>
+      <CalendarPage />
     </div>
   );
 }
 
 export default App;
+
 
 
 

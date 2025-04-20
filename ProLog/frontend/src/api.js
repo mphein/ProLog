@@ -1,4 +1,3 @@
-// src/api.js
 import axios from 'axios';
 
 const api = axios.create({
@@ -23,34 +22,43 @@ const api = axios.create({
 //   };
 
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-  
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-  
-        const refresh = localStorage.getItem('refresh_token');
-        try {
-          const res = await axios.post('http://localhost:8000/api/token/refresh/', {
-            refresh,
-          });
-  
-          const newAccess = res.data.access;
-          localStorage.setItem('access_token', newAccess);
-          originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-          return api(originalRequest);
-        } catch (refreshError) {
-          console.warn('Refresh failed, logging out...');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          window.location.reload(); // Forces login screen
-        }
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refresh = localStorage.getItem('refresh_token');
+      if (!refresh) {
+        // No refresh token → logout
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/'; // Redirect to login
+        return Promise.reject(error);
       }
-  
-      return Promise.reject(error);
+
+      try {
+        const res = await axios.post('http://localhost:8000/api/token/refresh/', {
+          refresh,
+        });
+
+        const newAccess = res.data.access;
+        localStorage.setItem('access_token', newAccess);
+        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed → logout
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        window.location.href = '/'; // Redirect to login page
+      }
     }
-  );
+
+    return Promise.reject(error);
+  }
+);
+
   
   
 
