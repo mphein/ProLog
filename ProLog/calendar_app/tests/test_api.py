@@ -121,6 +121,7 @@ def test_user_cannot_create_empty_event(api_client, user):
 
 @pytest.mark.django_db
 def test_update_event(api_client, user, event):
+    # Test that a user can update an event.
     api_client.login(username='testuser', password='testpassword')
     event_id = event.id
 
@@ -144,6 +145,7 @@ def test_update_event(api_client, user, event):
 
 @pytest.mark.django_db
 def test_update_event_wrong_user(api_client, user, event):
+    # Test to ensure user cannot modify another user's event.
     other_user = User.objects.create_user(username='otheruser', password='otherpassword')
 
     api_client.login(username='otherusername', password='otherpassword')
@@ -167,6 +169,7 @@ def test_update_event_wrong_user(api_client, user, event):
     assert event.location != updated_data['location']
 
 @pytest.mark.django_db
+# Test that user's can only update existing events.
 def test_update_non_existent_event(api_client, user, event):
     api_client.login(username='testuser', password='testpassword')
     event_id = 9999
@@ -174,3 +177,20 @@ def test_update_non_existent_event(api_client, user, event):
     response = api_client.put(url, {}, format='json')
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+######################################################################
+#                  Tests for API Deleting Event                      #
+######################################################################
+
+@pytest.mark.django_db
+def test_update_event(api_client, user, event):
+    # Test that a user can delete an event.
+    api_client.login(username='testuser', password='testpassword')
+    event_id = event.id
+
+    url = reverse("event_delete", args=[event.id])
+    response = api_client.delete(url)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+

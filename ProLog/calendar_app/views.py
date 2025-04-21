@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Event
@@ -37,3 +37,12 @@ class UserEventUpdateAPIView(UpdateAPIView):
         
         # Save the updated event.
         serializer.save()
+
+class UserEventDeleteAPIView(DestroyAPIView):
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Limit the queryset to the events owned by the authenticated user.
+        # This ensures that users can only update their own events.
+        return Event.objects.filter(user=self.request.user)
