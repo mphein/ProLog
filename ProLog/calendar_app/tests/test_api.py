@@ -4,6 +4,13 @@ from rest_framework.test import APIClient
 from django.contrib.auth.models import User
 from calendar_app.models import Event
 from rest_framework import status
+from django.urls import reverse
+
+
+
+######################################################################
+#                 Tests for User event API retrieval                 #
+######################################################################
 
 @pytest.fixture
 def user():
@@ -31,7 +38,8 @@ def api_client():
 def test_event_list_view(api_client, user, event):
     """Test that the event list view returns the correct events for a user."""
     api_client.login(username='testuser', password='testpassword')
-    response = api_client.get('/calendar/api/events/')
+    url = reverse('event_list')
+    response = api_client.get(url)
     assert response.status_code == 200
     assert len(response.data) == 1
     assert response.data[0]['title'] == 'Test Event'
@@ -40,13 +48,15 @@ def test_event_list_view(api_client, user, event):
 @pytest.mark.django_db
 def test_event_list_view_forbidden(api_client):
     """Test that a user who is not authenticated gets a 403 Forbidden response."""
-    response = api_client.get('/calendar/api/events/')
+    url = reverse('event_list')
+    response = api_client.get(url)
     
     # Assert that the user receives a 403 Forbidden status code
     assert response.status_code == 403
 
 ######################################################################
-
+#                  Tests for API Event Creation                      #
+######################################################################
 @pytest.mark.django_db
 def test_create_event(api_client, user):
     """Test that a user can create a new event."""
@@ -62,7 +72,8 @@ def test_create_event(api_client, user):
     api_client.login(username='testuser', password='testpassword')
     
     # Use the APIClient to send a POST request to the create event endpoint
-    response = api_client.post('/calendar/api/events/create', data)
+    url = reverse('event_create')
+    response = api_client.post(url, data)
 
     # Assert the status code is 201 (Created)
     assert response.status_code == status.HTTP_201_CREATED
@@ -76,7 +87,8 @@ def test_create_event(api_client, user):
 @pytest.mark.django_db
 def test_unauthenticated_user_cannot_create_event(api_client):
     # Test that users cannot create events when not logged in
-    response = api_client.post('/calendar/api/events/create', {})
+    url = reverse('event_create')
+    response = api_client.post(url, {})
     assert response.status_code in [401, 403]
 
 @pytest.mark.django_db
@@ -88,12 +100,97 @@ def test_invalid_date_format(user, api_client):
         'start_time': 'not-a-date',
         'end_time': 'also-not-a-date'
     }
-    response = api_client.post('/calendar/api/events/create', data)
+
+    url = reverse('event_create')
+    response = api_client.post(url, data)
     assert response.status_code == 400
 
 @pytest.mark.django_db
 def test_user_cannot_create_empty_event(api_client, user):
     # Test that users cannot create empty event
     api_client.login(username='testuser', password='testpassword')
-    response = api_client.post('/calendar/api/events/create', {})
+    url = reverse('event_create')
+    response = api_client.post(url, {})
     assert response.status_code == 400
+
+
+######################################################################
+#                  Tests for API Updating Event                      #
+######################################################################
+
+
+@pytest.mark.django_db
+def test_update_event(api_client, user, event):
+    # Test that a user can update an event.
+    api_client.login(username='testuser', password='testpassword')
+    event_id = event.id
+
+    updated_data = {
+        'title': 'Updated Event',
+        'description': 'Testing Update API',
+        'start_time': '2025-04-20T10:00:00Z',
+        'end_time': '2025-04-20T12:00:00Z',
+        'location': 'UPDATELAND',
+        'user': user.id  
+    }
+
+    url = reverse('event_update', args=[event.id])
+    response = api_client.put(url, updated_data, format='json')
+
+    assert response.status_code == status.HTTP_200_OK
+    event.refresh_from_db()
+    assert event.title == updated_data['title']
+    assert event.description == updated_data['description']
+    assert event.location == updated_data['location']
+
+@pytest.mark.django_db
+def test_update_event_wrong_user(api_client, user, event):
+    # Test to ensure user cannot modify another user's event.
+    other_user = User.objects.create_user(username='otheruser', password='otherpassword')
+
+    api_client.login(username='otherusername', password='otherpassword')
+
+    updated_data = {
+        'title': 'Updated Event',
+        'description': 'Testing Update API',
+        'start_time': '2025-04-20T10:00:00Z',
+        'end_time': '2025-04-20T12:00:00Z',
+        'location': 'UPDATELAND',
+        'user': user.id  
+    }
+    url = reverse('event_update', args=[event.id])
+    response = api_client.put(url, updated_data, format='json')
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    event.refresh_from_db()
+    assert event.title != updated_data['title']
+    assert event.description != updated_data['description']
+    assert event.location != updated_data['location']
+
+@pytest.mark.django_db
+# Test that user's can only update existing events.
+def test_update_non_existent_event(api_client, user, event):
+    api_client.login(username='testuser', password='testpassword')
+    event_id = 9999
+    url = reverse('event_update', args=[event_id])
+    response = api_client.put(url, {}, format='json')
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+######################################################################
+#                  Tests for API Deleting Event                      #
+######################################################################
+
+@pytest.mark.django_db
+def test_update_event(api_client, user, event):
+    # Test that a user can delete an event.
+    api_client.login(username='testuser', password='testpassword')
+    event_id = event.id
+
+    url = reverse("event_delete", args=[event.id])
+    response = api_client.delete(url)
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
