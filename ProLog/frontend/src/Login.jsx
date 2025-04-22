@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,6 +50,13 @@ function Login({ onLogin }) {
       />
       <button type="submit" className="bg-blue-500 text-white p-2 rounded">
         Log In
+      </button>
+      <button
+        type="button"
+        onClick={() => navigate('/register')}
+        className="text-sm text-blue-500 mt-2"
+      >
+        Don’t have an account? Sign up
       </button>
     </form>
   );
