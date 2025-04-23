@@ -6,6 +6,8 @@ function CreateEvent({ onEventCreated }) {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [error, setError] = useState(null);
+  const [location, setLocation] = useState('')
+  const [description, setDescription] = useState('')
   const token = localStorage.getItem('access_token')
 
   const handleSubmit = async (e) => {
@@ -17,6 +19,8 @@ function CreateEvent({ onEventCreated }) {
         title,
         start_time: new Date(start).toISOString(),
         end_time: new Date(end).toISOString(),
+        description,
+        location,
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,  // Send the JWT token in the Authorization header
@@ -27,7 +31,11 @@ function CreateEvent({ onEventCreated }) {
       setTitle('');
       setStart('');
       setEnd('');
-      onEventCreated?.();
+      setDescription('');
+      setLocation('');
+      if (onEventCreated) {
+        onEventCreated();
+      }
     } catch (err) {
       console.error('Request failed:', err);
       if (err.response) {
@@ -40,39 +48,84 @@ function CreateEvent({ onEventCreated }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold">Create Event</h2>
+    <form onSubmit={handleSubmit} className="box" style={{ margin: 'auto auto' }}>
+      <h2 className="title is-4">Create Event</h2>
 
-      <input
-        type="text"
-        placeholder="Event title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full border p-2 rounded"
-        required
-      />
+      <div className = "field">
+        <label className="label">Event Title</label>
+        <div className="control">
+          <input
+            type="text"
+            placeholder="Event title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full border p-2 rounded"
+            required
+          />
+        </div>  
+      </div>
 
-      <input
-        type="datetime-local"
-        value={start}
-        onChange={(e) => setStart(e.target.value)}
-        className="w-full border p-2 rounded"
-        required
-      />
+      <div className="field">
+        <label className="label">Start Time</label>
+        <div className="control">
+          <input
+            className="input"
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            required
+          />
+        </div>
+      </div>
 
-      <input
-        type="datetime-local"
-        value={end}
-        onChange={(e) => setEnd(e.target.value)}
-        className="w-full border p-2 rounded"
-        required
-      />
+      <div className="field">
+        <label className="label">End Time</label>
+        <div className="control">
+          <input
+            className="input"
+            type="datetime-local"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            required
+          />
+        </div>
+      </div>
 
-      {error && <p className="text-red-500">{error}</p>}
+      <div className="field">
+        <label className="label">Description (optional)</label>
+        <div className="control">
+          <input
+            className="input"
+            type="text"
+            placeholder="Optional description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+      </div>
 
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-        Create Event
-      </button>
+      <div className="field">
+        <label className="label">Location (optional)</label>
+        <div className="control">
+          <input
+            className="input"
+            type="text"
+            placeholder="Optional location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {error && <p className="help is-danger">{error}</p>}
+
+      <div className="field is-grouped is-grouped-right">
+        <div className="control">
+          <button type="submit" className="button is-primary">
+            Create Event
+          </button>
+        </div>
+      </div>
     </form>
   );
 }

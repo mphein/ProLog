@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import Login from './Login';
 import Register from './Register';
 import CalendarPage from './CalendarPage';
-import CreateEvent from './CreateEvent';
+import CreateEvent from './CreateEvent'; // ✅ NEW
+import 'bulma/css/bulma.min.css'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('access_token'));
