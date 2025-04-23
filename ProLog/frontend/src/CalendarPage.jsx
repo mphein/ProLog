@@ -23,21 +23,39 @@ const localizer = dateFnsLocalizer({
 
 function CalendarPage() {
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);  // Track loading state
 
   useEffect(() => {
-    api.get('events/')
-      .then(res => {
-        const formatted = res.data.map(event => ({
-          title: event.title,
-          start: new Date(event.start_time),
-          end: new Date(event.end_time),
-        }));
-        setEvents(formatted);
-      })
-      .catch(err => {
-        console.error('Failed to load events:', err);
-      });
-  }, []);
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      // Redirect to login if no token
+      window.location.href = '/';
+      return;
+    }
+
+    api.get('events/', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    })
+    .then(res => {
+      const formatted = res.data.map(event => ({
+        title: event.title,
+        start: new Date(event.start_time),
+        end: new Date(event.end_time),
+      }));
+      setEvents(formatted);
+      setLoading(false);  // Set loading to false after data is loaded
+    })
+    .catch(err => {
+      console.error('Failed to load events:', err);
+      setLoading(false);  // Set loading to false in case of error
+    });
+  }, []);  // Only run on component mount
+
+  if (loading) {
+    return <div>Loading events...</div>;  // Display loading message while fetching
+  }
 
   return (
     <div className="p-4">

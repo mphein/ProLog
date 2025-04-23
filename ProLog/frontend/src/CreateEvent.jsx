@@ -6,25 +6,36 @@ function CreateEvent({ onEventCreated }) {
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [error, setError] = useState(null);
+  const token = localStorage.getItem('access_token')
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await api.post('events/', {
+      // Send POST request with JWT token
+      const response = await api.post('events/create', {
         title,
-        start_time: start,
-        end_time: end,
+        start_time: new Date(start).toISOString(),
+        end_time: new Date(end).toISOString(),
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Send the JWT token in the Authorization header
+        },
       });
-
+  
       alert('Event created!');
       setTitle('');
       setStart('');
       setEnd('');
       onEventCreated?.();
     } catch (err) {
-      setError('Error creating event');
-      console.error(err);
+      console.error('Request failed:', err);
+      if (err.response) {
+        console.error('Error details:', err.response.data);
+        setError(err.response.data);
+      } else {
+        setError('Something went wrong.');
+      }
     }
   };
 
