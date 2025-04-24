@@ -3,7 +3,7 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfWeek from 'date-fns/startOfWeek';
 import getDay from 'date-fns/getDay';
-import enUS from 'date-fns/locale/en-US'; // Use import here
+import { enUS } from 'date-fns/locale'; // Use import here
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useEffect, useState } from 'react';
 import api from './api';
@@ -22,9 +22,12 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+
 function CalendarPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);  // Track loading state
+  const [view, setView] = useState('week'); // default view
+  const [currentDate, setCurrentDate] = useState(new Date()); // Track current date
 
   const refreshCalendar = () => {
     setLoading(true); // Start loading while fetching
@@ -73,7 +76,13 @@ function CalendarPage() {
           events={events}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 600 }}
+          view={view}
+          onView={setView}
+          date={currentDate} // Set the current date
+          onNavigate={(date) => setCurrentDate(date)} // Update the current date on navigation
+          views={['month', 'week', 'day']}
+          style={{ height: 500 }}
+          scrollToTime={new Date()}
         />
       </div>
       <div className="column is-full-touch is-one-third-desktop">
