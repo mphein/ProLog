@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -25,9 +26,9 @@ function Login({ onLogin }) {
       // Call parent login handler (optional)
       onLogin?.();
 
-      alert('Login successful!');
+      toast.success('Login successful!');
     } catch (err) {
-      alert('Login failed. Check your credentials.');
+      toast.error('Login failed. Check your credentials.');
       console.error(err);
     }
   };

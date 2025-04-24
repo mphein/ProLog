@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './Login';
 import Register from './Register';
 import CalendarPage from './CalendarPage';
-import CreateEvent from './CreateEvent'; // ✅ NEW
+import CreateEvent from './CreateEvent';
 import 'bulma/css/bulma.min.css'
 
 function App() {
@@ -111,6 +113,9 @@ function App() {
           }
         />
       </Routes>
+    
+      <ToastContainer position="top-right" autoClose={3000} />
+
     </Router>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import api from './api';
+import { toast } from 'react-toastify';
 
 function CreateEvent({ onEventCreated }) {
   const [title, setTitle] = useState('');
@@ -19,15 +20,15 @@ function CreateEvent({ onEventCreated }) {
         title,
         start_time: new Date(start).toISOString(),
         end_time: new Date(end).toISOString(),
-        description,
-        location,
+        if (description) {description},
+        if (location) {location},
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,  // Send the JWT token in the Authorization header
         },
       });
   
-      alert('Event created!');
+      toast.success('Event created!');
       setTitle('');
       setStart('');
       setEnd('');
