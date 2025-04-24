@@ -28,6 +28,7 @@ function CalendarPage() {
   const [loading, setLoading] = useState(true);  // Track loading state
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [readOnlyMode, setReadOnlyMode] = useState(true);
 
 
   const refreshCalendar = () => {
@@ -72,6 +73,7 @@ function CalendarPage() {
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
+    setReadOnlyMode(true); // Always start in view-only mode
     setShowEditor(true);
   };
 
@@ -92,76 +94,144 @@ function CalendarPage() {
         {/* CreateEvent form on the right */}
         <CreateEvent onEventCreated={refreshCalendar} />
       </div>
-    {showEditor && selectedEvent && (
-      <div className="mt-4 border p-4 rounded bg-gray-50 max-w-md">
-        <h2 className="font-semibold mb-2">Edit Event</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            api
-              .patch(`events/${selectedEvent.id}/update/`, {
-                title: selectedEvent.title,
-                start_time: selectedEvent.start,
-                end_time: selectedEvent.end,
-                description: selectedEvent.description,
-              })
-              .then(() => {
-                alert('Event updated!');
-                setShowEditor(false);
-                // Optionally re-fetch events here
-                setEvents((prevEvents) =>
-                  prevEvents.map((e) =>
-                    e.id === selectedEvent.id ? { ...selectedEvent } : e
-                  )
-                );
-              })
-              .catch((err) => {
-                alert('Update failed');
-                console.error(err);
-              });
-          }}
-          className="space-y-2"
-        >
-          <input
-            type="text"
-            value={selectedEvent.title}
-            onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
-            className="w-full border p-2"
-            placeholder="Title"
-          />
-          <input
-            type="datetime-local"
-            value={new Date(selectedEvent.start).toISOString().slice(0, 16)}
-            onChange={(e) => setSelectedEvent({ ...selectedEvent, start: new Date(e.target.value) })}
-            className="w-full border p-2"
-          />
-          <input
-            type="datetime-local"
-            value={new Date(selectedEvent.end).toISOString().slice(0, 16)}
-            onChange={(e) => setSelectedEvent({ ...selectedEvent, end: new Date(e.target.value) })}
-            className="w-full border p-2"
-          />
-          <textarea
-            value={selectedEvent.description || ''}
-            onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
-            className="w-full border p-2"
-            placeholder="Description"
-          />
-          <div className="flex justify-between">
-            <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded">
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowEditor(false)}
-              className="bg-gray-400 text-white px-3 py-1 rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    )}
+      {showEditor && selectedEvent && (
+        <div className="mt-4 border p-4 rounded bg-gray-50 max-w-md">
+          <h2 className="font-semibold mb-2">
+            {readOnlyMode ? 'Event Details' : 'Edit Event'}
+          </h2>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              api
+                .patch(`events/${selectedEvent.id}/update/`, {
+                  title: selectedEvent.title,
+                  start_time: selectedEvent.start,
+                  end_time: selectedEvent.end,
+                  description: selectedEvent.description,
+                })
+                .then(() => {
+                  alert('Event updated!');
+                  setShowEditor(false);
+                  setEvents((prevEvents) =>
+                    prevEvents.map((e) =>
+                      e.id === selectedEvent.id ? { ...selectedEvent } : e
+                    )
+                  );
+                })
+                .catch((err) => {
+                  alert('Update failed');
+                  console.error(err);
+                });
+            }}
+            className="space-y-2"
+          >
+            <input
+              type="text"
+              value={selectedEvent.title}
+              readOnly={readOnlyMode}
+              onChange={(e) =>
+                setSelectedEvent({ ...selectedEvent, title: e.target.value })
+              }
+              className="w-full border p-2"
+            />
+
+            <input
+              type="datetime-local"
+              value={new Date(selectedEvent.start).toISOString().slice(0, 16)}
+              readOnly={readOnlyMode}
+              onChange={(e) =>
+                setSelectedEvent({
+                  ...selectedEvent,
+                  start: new Date(e.target.value),
+                })
+              }
+              className="w-full border p-2"
+            />
+
+            <input
+              type="datetime-local"
+              value={new Date(selectedEvent.end).toISOString().slice(0, 16)}
+              readOnly={readOnlyMode}
+              onChange={(e) =>
+                setSelectedEvent({
+                  ...selectedEvent,
+                  end: new Date(e.target.value),
+                })
+              }
+              className="w-full border p-2"
+            />
+
+            <textarea
+              value={selectedEvent.description || ''}
+              readOnly={readOnlyMode}
+              onChange={(e) =>
+                setSelectedEvent({
+                  ...selectedEvent,
+                  description: e.target.value,
+                })
+              }
+              className="w-full border p-2"
+            />
+
+            {/* ✅ Only show SAVE + CANCEL when editing */}
+            {!readOnlyMode && (
+              <div className="flex justify-between mt-2">
+                <button
+                  type="submit"
+                  className="bg-green-600 text-white px-3 py-1 rounded"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditor(false)}
+                  className="bg-gray-400 text-white px-3 py-1 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </form>
+
+          {/* ✅ Buttons outside form = safe from triggering submit */}
+          {readOnlyMode && (
+            <div className="flex justify-between mt-4">
+              <button
+                type="button"
+                onClick={() => setReadOnlyMode(false)}
+                className="bg-blue-600 text-white px-3 py-1 rounded"
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Are you sure you want to delete this event?')) {
+                    api
+                      .delete(`events/${selectedEvent.id}/delete/`)
+                      .then(() => {
+                        alert('Event deleted.');
+                        setEvents((prev) =>
+                          prev.filter((e) => e.id !== selectedEvent.id)
+                        );
+                        setShowEditor(false);
+                      })
+                      .catch((err) => {
+                        alert('Failed to delete event');
+                        console.error(err);
+                      });
+                  }
+                }}
+                className="bg-red-500 text-white px-3 py-1 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }
