@@ -18,8 +18,8 @@ function CreateEvent({ onEventCreated }) {
       // Send POST request with JWT token
       const response = await api.post('events/create', {
         title,
-        start_time: new Date(start).toISOString(),
-        end_time: new Date(end).toISOString(),
+        start_time: start,
+        end_time: end,
         description,
         location,
       }, {

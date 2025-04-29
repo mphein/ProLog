@@ -46,8 +46,8 @@ function CalendarPage() {
         const formatted = res.data.map((event) => ({
           id: event.id,
           title: event.title,
-          start: new Date(event.start_time),
-          end: new Date(event.end_time),
+          start: event.start_time,
+          end: event.end_time,
           description: event.description,
           location: event.location,
         }));
@@ -65,7 +65,16 @@ function CalendarPage() {
   }, []);
 
   const handleSelectEvent = (event) => {
-    setSelectedEvent(event);
+    const formatDateForInput = (dateObj) => {
+      if (!(dateObj instanceof Date)) return '';
+      return dateObj.toISOString().slice(0, 16);
+    };
+  
+    setSelectedEvent({
+      ...event,
+      start: formatDateForInput(event.start),
+      end: formatDateForInput(event.end),
+    });
     setReadOnlyMode(true);
     setShowEditor(true);
   };
@@ -80,15 +89,12 @@ function CalendarPage() {
         description: selectedEvent.description,
         location: selectedEvent.location,
       })
+
       .then(() => {
         toast.success('Event updated!');
         setShowEditor(false);
         setSelectedEvent(null);
-        setEvents((prevEvents) =>
-          prevEvents.map((e) =>
-            e.id === selectedEvent.id ? { ...selectedEvent } : e
-          )
-        );
+        refreshCalendar();
       })
       .catch((err) => {
         toast.error('Update failed');
@@ -123,7 +129,11 @@ function CalendarPage() {
         <h1 className="text-2xl font-bold mb-4">Your Calendar</h1>
         <Calendar
           localizer={localizer}
-          events={events}
+          events={events.map(e => ({
+            ...e,
+            start: new Date(e.start),
+            end: new Date(e.end),
+          }))}
           startAccessor="start"
           endAccessor="end"
           onSelectEvent={handleSelectEvent}
@@ -172,12 +182,12 @@ function CalendarPage() {
                     <input
                       className="input"
                       type="datetime-local"
-                      value={new Date(selectedEvent[field]).toISOString().slice(0, 16)}
+                      value={selectedEvent[field] || ''}
                       readOnly={readOnlyMode}
                       onChange={(e) =>
                         setSelectedEvent({
                           ...selectedEvent,
-                          [field]: new Date(e.target.value),
+                          [field]: e.target.value,
                         })
                       }
                     />
