@@ -7,6 +7,19 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     location = models.CharField(max_length=255, blank=True, null=True)
+    recurrence = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        choices=[
+            ('none', 'None'),
+            ('daily', 'Daily'),
+            ('weekly', 'Weekly'),
+            ('monthly', 'Monthly'),
+            ('yearly', 'Yearly'),
+        ],
+        default='none'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link each event to a user
 

@@ -9,6 +9,7 @@ function CreateEvent({ onEventCreated }) {
   const [error, setError] = useState(null);
   const [location, setLocation] = useState('')
   const [description, setDescription] = useState('')
+  const [recurrence, setRecurrence] = useState('none');
   const token = localStorage.getItem('access_token')
 
   const handleSubmit = async (e) => {
@@ -22,6 +23,7 @@ function CreateEvent({ onEventCreated }) {
         end_time: end,
         description,
         location,
+        recurrence
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,  // Send the JWT token in the Authorization header
@@ -91,6 +93,22 @@ function CreateEvent({ onEventCreated }) {
           />
         </div>
       </div>
+
+      <div className="field">
+        <label className="label">Recurrence</label>
+        <div className="control">
+          <div className="select is-fullwidth">
+            <select value={recurrence} onChange={(e) => setRecurrence(e.target.value)}>
+              <option value="none">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
 
       <div className="field">
         <label className="label">Description (optional)</label>
