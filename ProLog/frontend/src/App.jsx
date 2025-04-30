@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './Login';
 import Register from './Register';
 import CalendarPage from './CalendarPage';
-import CreateEvent from './CreateEvent'; // ✅ NEW
+import CreateEvent from './CreateEvent';
 import 'bulma/css/bulma.min.css'
 
 function App() {
@@ -64,9 +66,6 @@ function App() {
                 <div className="flex justify-between items-center mb-4">
                   <h1 className="text-xl font-bold">Calendar</h1>
                   <div className="space-x-2">
-                    <Link to="/create-event" className="bg-green-500 text-white px-3 py-1 rounded">
-                      + Create Event
-                    </Link>
                     <button
                       onClick={handleLogout}
                       className="bg-red-500 text-white px-3 py-1 rounded"
@@ -111,6 +110,9 @@ function App() {
           }
         />
       </Routes>
+    
+      <ToastContainer position="top-right" autoClose={3000} />
+
     </Router>
   );
 }
