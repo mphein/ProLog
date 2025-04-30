@@ -38,6 +38,8 @@ function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [readOnlyMode, setReadOnlyMode] = useState(true);
+  const [view, setView] = useState('week'); // default view
+  const [currentDate, setCurrentDate] = useState(new Date()); // Track current date
 
   const refreshCalendar = () => {
     setLoading(true);
@@ -258,6 +260,12 @@ function CalendarPage() {
           onEventDrop={handleMoveEvent}      // handle drag
           onEventResize={handleResizeEvent}  // handle resize
           resizable
+          view={view}
+          onView={setView}
+          date={currentDate} // Set the current date
+          onNavigate={(date) => setCurrentDate(date)} // Update the current date on navigation
+          views={['month', 'week', 'day']}
+          scrollToTime={new Date()}
           style={{ height: 600 }}
         />
       </div>
