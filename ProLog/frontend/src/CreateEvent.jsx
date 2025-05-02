@@ -16,6 +16,11 @@ function CreateEvent({ onEventCreated }) {
     e.preventDefault();
 
     try {
+      if (new Date(start) >= new Date(end)) {
+        toast.error("Start time must be before end time.");
+        return;
+      }
+      
       // Send POST request with JWT token
       const response = await api.post('events/create', {
         title,
