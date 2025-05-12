@@ -1,7 +1,7 @@
 # calendar_app/tests/test_models.py
 import pytest
 from django.contrib.auth.models import User
-from calendar_app.models import Event
+from backend.calendar_app.models import Event
 
 @pytest.fixture
 def user():
