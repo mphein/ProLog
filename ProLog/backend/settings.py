@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'backend.calendar_app',
     'rest_framework',
     'backend.accounts',
+    'backend.tracker',
 ]
 
 MIDDLEWARE = [
