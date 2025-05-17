@@ -1,4 +1,6 @@
 from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from django.db import models
+from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Event
@@ -10,9 +12,10 @@ class UserEventListAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         """
-        Return the list of events for the currently authenticated user.
+        Return the list of events owned or invited to for the currently authenticated user.
         """
-        return Event.objects.filter(user=self.request.user)
+        user = self.request.user
+        return Event.objects.filter(models.Q(user=user) | models.Q(invited_users=user)).distinct()
 
 class UserEventCreateAPIView(CreateAPIView):
     serializer_class = EventSerializer

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from './api';
 import { toast } from 'react-toastify';
 
@@ -10,7 +10,20 @@ function CreateEvent({ onEventCreated }) {
   const [location, setLocation] = useState('')
   const [description, setDescription] = useState('')
   const [recurrence, setRecurrence] = useState('none');
+  const [users, setUsers] = useState([]);
+  const [invitedUsers, setInvitedUsers] = useState([]);
   const token = localStorage.getItem('access_token')
+
+  useEffect(() => {
+    api.get('/users/')
+      .then((res) => {
+        setUsers(res.data);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch users:', err);
+      });
+  }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +33,7 @@ function CreateEvent({ onEventCreated }) {
         toast.error("Start time must be before end time.");
         return;
       }
-      
+
       // Send POST request with JWT token
       const response = await api.post('events/create', {
         title,
@@ -28,7 +41,8 @@ function CreateEvent({ onEventCreated }) {
         end_time: end,
         description,
         location,
-        recurrence
+        recurrence,
+        invited_users: invitedUsers,
       }, {
         headers: {
           'Authorization': `Bearer ${token}`,  // Send the JWT token in the Authorization header
@@ -138,6 +152,29 @@ function CreateEvent({ onEventCreated }) {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="label">Invite Users</label>
+        <div className="control">
+          {users.map((user) => (
+            <label className="checkbox" key={user.id} style={{ marginRight: '10px' }}>
+              <input
+                type="checkbox"
+                value={user.id}
+                checked={invitedUsers.includes(user.id)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setInvitedUsers([...invitedUsers, user.id]);
+                  } else {
+                    setInvitedUsers(invitedUsers.filter((id) => id !== user.id));
+                  }
+                }}
+              />
+              &nbsp;{user.username}
+            </label>
+          ))}
         </div>
       </div>
 

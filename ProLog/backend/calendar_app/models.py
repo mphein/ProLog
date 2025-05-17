@@ -20,6 +20,7 @@ class Event(models.Model):
         ],
         default='none'
     )
+    invited_users = models.ManyToManyField(User, related_name='event_invitations', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link each event to a user
 

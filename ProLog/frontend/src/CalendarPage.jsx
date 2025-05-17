@@ -38,7 +38,7 @@ function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const [readOnlyMode, setReadOnlyMode] = useState(true);
-  const [view, setView] = useState('week'); // default view
+  const [view, setView] = useState('month'); // default view
   const [currentDate, setCurrentDate] = useState(new Date()); // Track current date
 
   const refreshCalendar = () => {
@@ -62,7 +62,9 @@ function CalendarPage() {
           end: event.end_time,
           description: event.description,
           location: event.location,
-          recurrence: event.recurrence
+          recurrence: event.recurrence,
+          invited_users: event.invited_users,
+          shared: event.invited_users.length > 0
         }));
         setEvents(formatted);
         setLoading(false);
@@ -100,7 +102,7 @@ function CalendarPage() {
         start_time: selectedEvent.start,
         end_time: selectedEvent.end,
         description: selectedEvent.description,
-        location: selectedEvent.location
+        location: selectedEvent.location,
       })
 
       .then(() => {
