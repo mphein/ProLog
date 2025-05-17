@@ -258,6 +258,9 @@ return (
         events={expandRecurringEvents(events)}
         startAccessor="start"
         endAccessor="end"
+        eventPropGetter={(event) => ({
+          className: event.shared ? 'shared-event' : ''
+        })}
         onSelectEvent={handleSelectEvent}
         onEventDrop={handleMoveEvent}
         onEventResize={handleResizeEvent}
