@@ -15,8 +15,7 @@ import api from './api';
 import CreateEvent from './CreateEvent';
 import { toast } from 'react-toastify';
 
-
-
+import './CalendarPage.css';
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
@@ -63,8 +62,8 @@ function CalendarPage() {
           description: event.description,
           location: event.location,
           recurrence: event.recurrence,
-          invited_users: event.invited_users,
-          shared: event.invited_users.length > 0
+          shared: event.invited_users_data.length > 0, 
+          invited_users: event.invited_users_data,
         }));
         setEvents(formatted);
         setLoading(false);
@@ -254,6 +253,7 @@ return (
     <div className="column is-full-touch is-two-thirds-desktop">
       <h1 className="text-2xl font-bold mb-4">Your Calendar</h1>
       <DnDCalendar
+
         localizer={localizer}
         events={expandRecurringEvents(events)}
         startAccessor="start"

@@ -9,11 +9,22 @@ class UserSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
 
-    invited_users = UserSerializer(many=True)
+    invited_users = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        many=True,
+        write_only=True
+    )
+
+    invited_users_data = UserSerializer(many=True, read_only=True, source='invited_users')
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'start_time', 'end_time', 'location', 'recurrence', 'invited_users']  # EXCLUDE 'user' and 'created_at'
+
+        # EXCLUDE 'user' and 'created_at'
+        fields = [
+            'id', 'title', 'description', 'start_time', 'end_time', 'location', 
+            'recurrence', 'invited_users', 'invited_users_data'
+        ]  
 
     def create(self, validated_data):
         invited_users = validated_data.pop('invited_users', [])

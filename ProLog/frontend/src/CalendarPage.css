@@ -1,0 +1,6 @@
+/* CalendarPage.css */
+.rbc-event.shared-event {
+  background-color: #FFD700 !important; /* Gold color */
+  border-color: #FFD700 !important;
+  color: black !important;
+}
