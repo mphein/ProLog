@@ -95,6 +95,11 @@ function CalendarPage() {
 
   const handleUpdateSubmit = (e) => {
     e.preventDefault();
+
+    const invitedUserIds = selectedEvent.invited_users
+      ? selectedEvent.invited_users.map((user) => user.id)
+      : [];
+
     api
       .patch(`events/${selectedEvent.id}/update/`, {
         title: selectedEvent.title,
@@ -102,6 +107,7 @@ function CalendarPage() {
         end_time: selectedEvent.end,
         description: selectedEvent.description,
         location: selectedEvent.location,
+        invited_users: invitedUserIds,
       })
 
       .then(() => {
@@ -136,9 +142,13 @@ function CalendarPage() {
   };
 
   const handleMoveEvent = ({ event, start, end }) => {
+
+    const invitedUserIds = event.invited_users ? event.invited_users.map((u) => u.id) : [];
+
     api.patch(`events/${event.id}/update/`, {
       start_time: start.toISOString().slice(0, 16),
       end_time: end.toISOString().slice(0, 16),
+      invited_users: invitedUserIds,
     })
       .then(() => {
         toast.success('Event moved!');
@@ -151,9 +161,13 @@ function CalendarPage() {
   };
   
   const handleResizeEvent = ({ event, start, end }) => {
+
+    const invitedUserIds = event.invited_users ? event.invited_users.map((u) => u.id) : [];
+
     api.patch(`events/${event.id}/update/`, {
       start_time: start.toISOString().slice(0, 16),
       end_time: end.toISOString().slice(0, 16),
+      invited_users: invitedUserIds,
     })
       .then(() => {
         toast.success('Event resized!');
@@ -343,6 +357,30 @@ return (
                 </div>
               </div>
             ))}
+
+            {/* 🔥 NEW: Invited Users Display */}
+            <div className="field">
+              <label className="label">Invited Users</label>
+              <div className="control">
+                <div className="select is-multiple is-fullwidth">
+                  <select
+                    multiple
+                    readOnly={readOnlyMode}
+                    value={selectedEvent.invited_users ? selectedEvent.invited_users.map((u) => u.id) : []}
+                  >
+                    {selectedEvent.invited_users && selectedEvent.invited_users.length > 0 ? (
+                      selectedEvent.invited_users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.username} - {user.email}
+                        </option>
+                      ))
+                    ) : (
+                      <option>No users invited.</option>
+                    )}
+                  </select>
+                </div>
+              </div>
+            </div>
           </section>
 
           <footer className="modal-card-foot">
