@@ -39,6 +39,9 @@ function CalendarPage() {
   const [readOnlyMode, setReadOnlyMode] = useState(true);
   const [view, setView] = useState('month'); // default view
   const [currentDate, setCurrentDate] = useState(new Date()); // Track current date
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [invitations, setInvitations] = useState([]);
+
 
   const refreshCalendar = () => {
     setLoading(true);
@@ -78,6 +81,31 @@ function CalendarPage() {
     refreshCalendar();
   }, []);
 
+  useEffect(() => {
+    if (inboxOpen) {
+      api.get('/invitations/pending/')
+        .then((res) => setInvitations(res.data))
+        .catch(() => toast.error('Failed to load invitations.'));
+    }
+  }, [inboxOpen]);
+
+  const respondToInvite = (id, isAccepted) => {
+    api
+      .patch(`/invitations/${id}/respond/`, {
+        is_accepted: isAccepted,
+        responded: true,
+      })
+
+      .then(() => {
+        toast.success(isAccepted ? 'Accepted!' : 'Declined!');
+        setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+        refreshCalendar(); // so accepted events appear
+      })
+
+      .catch(() => toast.error('Failed to respond to invite.'));
+  };
+
+  
   const handleSelectEvent = (event) => {
     const formatDateForInput = (dateObj) => {
       if (!(dateObj instanceof Date)) return '';
@@ -288,7 +316,6 @@ return (
         style={{ height: 600 }}
       />
     </div>
-
     <div className="column is-full-touch is-one-third-desktop">
       {!showEditor && <CreateEvent onEventCreated={refreshCalendar} />}
     </div>
@@ -421,6 +448,46 @@ return (
       </div>
     )}
     {/* 🔥 MODAL END */}
+    {/* 📨 Inbox Toggle Button */}
+    <button
+      onClick={() => setInboxOpen(!inboxOpen)}
+      className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded shadow"
+    >
+      {inboxOpen ? 'Close Inbox' : 'Open Inbox'}
+    </button>
+
+    {/* 📨 Inbox Panel */}
+    {inboxOpen && (
+      <div className="fixed top-0 right-0 w-80 h-full bg-white border-l shadow-lg z-40 overflow-y-auto p-4">
+        <h2 className="text-lg font-bold mb-4">Invitations</h2>
+        {invitations.length === 0 ? (
+          <p>No pending invites.</p>
+        ) : (
+          invitations.map((inv) => (
+            <div key={inv.id} className="mb-4 p-2 border rounded">
+              <p className="font-semibold">{inv.event.title}</p>
+              <p className="text-sm text-gray-600">
+                {new Date(inv.event.start_time).toLocaleString()}
+              </p>
+              <div className="mt-2 space-x-2">
+                <button
+                  className="button is-small is-success"
+                  onClick={() => respondToInvite(inv.id, true)}
+                >
+                  Accept
+                </button>
+                <button
+                  className="button is-small is-danger"
+                  onClick={() => respondToInvite(inv.id, false)}
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    )}
   </div>
 );
 

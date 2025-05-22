@@ -20,10 +20,15 @@ class Event(models.Model):
         ],
         default='none'
     )
-    invited_users = models.ManyToManyField(User, related_name='event_invitations', blank=True)
+    invited_users = models.ManyToManyField(User, through="EventInvitation", related_name='event_invitations', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Link each event to a user
 
     def __str__(self):
         return self.title
-        
+
+class EventInvitation(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_accepted = models.BooleanField(default=False)    # Whether they accepted
+    responded = models.BooleanField(default=False)      # Whether they responded

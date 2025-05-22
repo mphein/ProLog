@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './Login';
+import Inbox from './Inbox';
 import Register from './Register';
 import CalendarPage from './CalendarPage';
 import CreateEvent from './CreateEvent';
@@ -23,6 +24,7 @@ function App() {
       setIsLoggedIn(false);
     }
   }, []);
+
 
   return (
     <Router>
@@ -81,36 +83,7 @@ function App() {
             )
           }
         />
-
-        {/* Create Event */}
-        <Route
-          path="/create-event"
-          element={
-            isLoggedIn ? (
-              <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-xl font-bold">Create Event</h1>
-                  <div className="space-x-2">
-                    <Link to="/calendar" className="bg-blue-500 text-white px-3 py-1 rounded">
-                      ← Calendar
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="bg-red-500 text-white px-3 py-1 rounded"
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                </div>
-                <CreateEvent />
-              </div>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
       </Routes>
-    
       <ToastContainer position="top-right" autoClose={3000} />
 
     </Router>
