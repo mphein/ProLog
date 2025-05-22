@@ -25,11 +25,11 @@ class EventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         invited_users = validated_data.pop('invited_users', [])
+        validated_data.pop('user', None)
         creator = self.context['request'].user
 
-        invited_users = [user for user in invited_users if user != creator]
+        invited_users = [user for user in invited_users if user.id != creator.id]
 
-        
         event = Event.objects.create(user=creator, **validated_data)
         event.invited_users.set(invited_users)
         return event
@@ -38,7 +38,7 @@ class EventSerializer(serializers.ModelSerializer):
         invited_users = validated_data.pop('invited_users', [])
         creator = self.context['request'].user
 
-        invited_users = [user for user in invited_users if user != creator]
+        invited_users = [user for user in invited_users if user.id != creator.id]
 
         instance = super().update(instance, validated_data)
         instance.invited_users.set(invited_users)  # Update invited users

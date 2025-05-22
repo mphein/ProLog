@@ -1,18 +1,30 @@
 import { useEffect, useState } from 'react';
 import api from './api';
 import { toast } from 'react-toastify';
+import { jwtDecode } from 'jwt-decode';
 
 function CreateEvent({ onEventCreated }) {
   const [title, setTitle] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [error, setError] = useState(null);
-  const [location, setLocation] = useState('')
-  const [description, setDescription] = useState('')
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
   const [recurrence, setRecurrence] = useState('none');
   const [users, setUsers] = useState([]);
   const [invitedUsers, setInvitedUsers] = useState([]);
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('access_token');
+  //const token = localStorage.getItem('access');
+  let currentUserId = null;
+
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      currentUserId = decoded.user_id || decoded.id; // adjust depending on your token
+    } catch (err) {
+      console.error('Error decoding token:', err);
+    }
+  }
 
   useEffect(() => {
     api.get('/users/')
@@ -158,22 +170,24 @@ function CreateEvent({ onEventCreated }) {
       <div className="field">
         <label className="label">Invite Users</label>
         <div className="control">
-          {users.map((user) => (
-            <label className="checkbox" key={user.id} style={{ marginRight: '10px' }}>
-              <input
-                type="checkbox"
-                value={user.id}
-                checked={invitedUsers.includes(user.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setInvitedUsers([...invitedUsers, user.id]);
-                  } else {
-                    setInvitedUsers(invitedUsers.filter((id) => id !== user.id));
-                  }
-                }}
-              />
-              &nbsp;{user.username}
-            </label>
+          {users
+            .filter((user) => user.id !== Number(currentUserId))
+            .map((user) => (
+              <label className="checkbox" key={user.id}>
+                <input
+                  type="checkbox"
+                  value={user.id}
+                  checked={invitedUsers.includes(user.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setInvitedUsers([...invitedUsers, user.id]);
+                    } else {
+                      setInvitedUsers(invitedUsers.filter((id) => id !== user.id));
+                    }
+                  }}
+                />
+                &nbsp;{user.username}
+              </label>
           ))}
         </div>
       </div>
