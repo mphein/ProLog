@@ -21,9 +21,6 @@ class Timer(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.title} ({self.project.name})"
-
     def duration(self):
         if self.end_time:
             return self.end_time - self.start_time
