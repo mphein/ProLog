@@ -13,6 +13,8 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { useEffect, useState } from 'react';
 import api from './api';
 import CreateEvent from './CreateEvent';
+
+import { Mail } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 import './CalendarPage.css';
